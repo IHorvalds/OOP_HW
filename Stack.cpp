@@ -1,5 +1,6 @@
 #include "Stack.h"
-#include <iostream>
+#include <istream>
+#include <ostream>
 
 Stack::Stack() {
 	this->top = NULL;

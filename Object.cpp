@@ -1,7 +1,6 @@
 #include "Object.h"
 #include <string>
 #include <iomanip>
-#include <algorithm>
 
 Object::Object() {
 	this->size = 0;
