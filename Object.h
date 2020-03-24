@@ -8,6 +8,7 @@ private:
 	void* content;
 	size_t size;
 public:
+	Object();
 	Object(size_t size);
 	Object(const Object& ob_ref);
 	~Object();

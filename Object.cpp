@@ -1,5 +1,12 @@
 #include "Object.h"
 #include <string>
+#include <iomanip>
+#include <algorithm>
+
+Object::Object() {
+	this->size = 0;
+	this->content = NULL;
+}
 
 Object::Object(size_t size) {
 	this->size = size;
@@ -9,12 +16,14 @@ Object::Object(size_t size) {
 Object::Object(const Object& ob_ref) {
 	this->size = ob_ref.size;
 	this->content = (void*) new char[size] { 0 };
-	memcpy(this->content, ob_ref.content, ob_ref.size);
+	if (ob_ref.content != NULL) {
+		memcpy(this->content, ob_ref.content, ob_ref.size);
+	}
 }
 
 Object::~Object() {
-	memset(this->content, 0, this->size); // nu lasam valori in urma
 	delete this->content;
+	this->content = NULL;
 }
 
 size_t Object::GetSize() {
@@ -42,36 +51,84 @@ std::istream& operator >> (std::istream& istream, Object& ob) {
 	ob.content = (void*) new char[size] { 0 };
 
 	istream >> value;
-	unsigned long long v = stoull(value, nullptr, 16);
-	memcpy(ob.content, &v, ob.size);
+	if (value.size() != (2 * size)) {
+		throw std::range_error("Please pad the input to the correct size");
+	}
+
+	for (int i = 0; i < size; i++) {
+		memset((char*)ob.content + i, std::stoi(value.substr(i*2, 2), nullptr, 16), 1);
+	}
 	return istream;
 }
 
 std::ostream& operator << (std::ostream& ostream, const Object& ob) {
-	ostream << (int)ob.size << ' ';
-	ostream << std::hex << *((unsigned long long*)ob.content);
+	ostream << (int)ob.size << " 0x" << std::hex;
 
-	return ostream;
+	for (size_t iter = 0; iter < ob.size; iter++) {
+		ostream << std::setw(2) << (unsigned int)(*((unsigned char*)ob.content + iter));
+	}
+
+	return ostream << std::dec;
 }
 
 bool operator == (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) == *((unsigned long long*)rhs.content);
+
+	if (lhs.size == rhs.size) {
+		return memcmp(lhs.content, rhs.content, lhs.size) == 0;
+	}
+	else {
+		return false;
+	}
 }
 
 bool operator != (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) != *((unsigned long long*)rhs.content);
+
+	if (lhs.size != rhs.size) {
+		return true;
+	}
+	else {
+		return memcmp(lhs.content, rhs.content, lhs.size) != 0;
+	}
 }
 
 bool operator >= (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) >= *((unsigned long long*)rhs.content);
+
+	if (lhs.size < rhs.size) {
+		return false;
+	}
+	else {
+		return memcmp(lhs.content, rhs.content, rhs.size) >= 0;
+	}
+
 }
 
 bool operator >  (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) > *((unsigned long long*)rhs.content);
+
+	if (lhs.size < rhs.size) {
+		return false;
+	}
+	else {
+		return memcmp(lhs.content, rhs.content, lhs.size) > 0;
+	}
+
 }
 bool operator <= (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) <= *((unsigned long long*)rhs.content);
+
+	if (lhs.size > rhs.size) {
+		return false;
+	}
+	else {
+		return memcmp(lhs.content, rhs.content, lhs.size) <= 0;
+	}
+
 }
 bool operator <  (Object& lhs, Object& rhs) {
-	return *((unsigned long long*)lhs.content) < *((unsigned long long*)rhs.content);
+
+	if (lhs.size > rhs.size) {
+		return false;
+	}
+	else {
+		return memcmp(lhs.content, rhs.content, lhs.size) < 0;
+	}
+	
 }
